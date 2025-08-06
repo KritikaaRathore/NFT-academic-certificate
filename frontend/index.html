@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 NFT Certificate System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .result {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 1px solid #c3e6cb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 5px solid #28a745;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border: 1px solid #f5c6cb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .certificate-display {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .certificate-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+        }
+
+        .status-card {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .metamask-connect {
+            background: linear-gradient(135deg, #f6851b 0%, #e2761b 100%);
+            margin-bottom: 20px;
+        }
+
+        .connected {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .wallet-info {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .small-text {
+            font-size: 12px;
+            opacity: 0.8;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 NFT Certificate System</h1>
+            <p>Blockchain-based Academic Certificate Issuance & Verification</p>
+        </div>
+
+        <!-- MetaMask Connection -->
+        <div class="card">
+            <button id="connectWallet" class="btn metamask-connect" onclick="connectWallet()">
+                🦊 Connect MetaMask Wallet
+            </button>
+            <div id="walletInfo" style="display: none;"></div>
+        </div>
+
+        <!-- Main Interface -->
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('issue')">📜 Issue Certificate</button>
+                <button class="tab" onclick="switchTab('verify')">✅ Verify Certificate</button>
+                <button class="tab" onclick="switchTab('view')">👁️ View Certificate</button>
+                <button class="tab" onclick="switchTab('student')">👨‍🎓 Student View</button>
+            </div>
+
+            <!-- Issue Certificate Tab -->
+            <div id="issue" class="tab-content active">
+                <h2>📜 Issue New Certificate</h2>
+                <form id="certificateForm">
+                    <div class="grid">
+                        <div>
+                            <div class="form-group">
+                                <label for="studentAddress">🔗 Student Wallet Address:</label>
+                                <input type="text" id="studentAddress" required placeholder="0x..." pattern="0x[a-fA-F0-9]{40}">
+                            </div>
+                            <div class="form-group">
+                                <label for="studentName">👤 Student Name:</label>
+                                <input type="text" id="studentName" required placeholder="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label for="courseName">📚 Course Name:</label>
+                                <input type="text" id="courseName" required placeholder="Blockchain Development">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="form-group">
+                                <label for="issueDate">📅 Issue Date:</label>
+                                <input type="date" id="issueDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="grade">🏆 Grade:</label>
+                                <select id="grade">
+                                    <option value="A+">A+ (Outstanding)</option>
+                                    <option value="A">A (Excellent)</option>
+                                    <option value="B+">B+ (Very Good)</option>
+                                    <option value="B">B (Good)</option>
+                                    <option value="C">C (Satisfactory)</option>
+                                    <option value="Pass" selected>Pass</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn" id="issueBtn">
+                        <span id="issueText">🚀 Issue Certificate</span>
+                        <div id="issueLoading" class="loading" style="display: none;"></div>
+                    </button>
+                </form>
+                <div id="issueResult"></div>
+            </div>
+
+            <!-- Verify Certificate Tab -->
+            <div id="verify" class="tab-content">
+                <h2>✅ Verify Certificate</h2>
+                <div class="form-group">
+                    <label for="verifyTokenId">🎫 Certificate Token ID:</label>
+                    <input type="number" id="verifyTokenId" placeholder="Enter token ID" min="1">
+                </div>
+                <button onclick="verifyCertificate()" class="btn btn-secondary">
+                    🔍 Verify Certificate
+                </button>
+                <div id="verifyResult"></div>
+            </div>
+
+            <!-- View Certificate Tab -->
+            <div id="view" class="tab-content">
+                <h2>👁️ View Certificate Details</h2>
+                <div class="form-group">
+                    <label for="viewTokenId">🎫 Certificate Token ID:</label>
+                    <input type="number" id="viewTokenId" placeholder="Enter token ID" min="1">
+                </div>
+                <button onclick="viewCertificate()" class="btn">
+                    📋 View Details
+                </button>
+                <div id="viewResult"></div>
+            </div>
+
+            <!-- Student View Tab -->
+            <div id="student" class="tab-content">
+                <h2>👨‍🎓 Student Certificate View</h2>
+                <div class="form-group">
+                    <label for="studentWalletAddress">🔗 Student Wallet Address:</label>
+                    <input type="text" id="studentWalletAddress" placeholder="0x..." pattern="0x[a-fA-F0-9]{40}">
+                </div>
+                <button onclick="getStudentCertificates()" class="btn">
+                    📜 Get My Certificates
+                </button>
+                <div id="studentResult"></div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card status-card">
+            <h2>⚡ System Status</h2>
+            <div id="systemStatus">🔄 Loading...</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.0.3/web3.min.js"></script>
+    <script>
+        // Global variables
+        let web3;
+        let userAccount;
+        let contractAddress;
+        
+        // Set default date to today
+        document.getElementById('issueDate').value = new Date().toISOString().split('T')[0];
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Connect to MetaMask
+        async function connectWallet() {
+            const connectBtn = document.getElementById('connectWallet');
+            const walletInfo = document.getElementById('walletInfo');
+            
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    connectBtn.innerHTML = '🔄 Connecting...';
+                    connectBtn.disabled = true;
+                    
+                    // Request account access
+                    const accounts = await window.ethereum.request({ 
+                        method: 'eth_requestAccounts' 
+                    });
+                    
+                    web3 = new Web3(window.ethereum);
+                    userAccount = accounts[0];
+                    
+                    // Get balance
+                    const balance = await web3.eth.getBalance(userAccount);
+                    const balanceEth = web3.utils.fromWei(balance, 'ether');
+                    
+                    // Update UI
+                    connectBtn.innerHTML = '✅ Connected to MetaMask';
+                    connectBtn.classList.add('connected');
+                    connectBtn.disabled = false;
+                    
+                    walletInfo.innerHTML = `
+                        <div class="wallet-info">
+                            <strong>🔗 Connected Account:</strong><br>
+                            <span class="small-text">${userAccount}</span><br>
+                            <strong>💰 Balance:</strong> ${parseFloat(balanceEth).toFixed(4)} ETH
+                        </div>
+                    `;
+                    walletInfo.style.display = 'block';
+                    
+                    // Auto-fill student address in issue form
+                    document.getElementById('studentAddress').value = userAccount;
+                    document.getElementById('studentWalletAddress').value = userAccount;
+                    
+                } catch (error) {
+                    console.error('Connection failed:', error);
+                    connectBtn.innerHTML = '❌ Connection Failed';
+                    connectBtn.disabled = false;
+                    setTimeout(() => {
+                        connectBtn.innerHTML = '🦊 Connect MetaMask Wallet';
+                        connectBtn.classList.remove('connected');
+                    }, 3000);
+                }
+            } else {
+                alert('MetaMask is not installed! Please install MetaMask browser extension.');
+            }
+        }
+
+        // Load system status
+        async function loadSystemStatus() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                const totalResponse = await fetch('/api/total-supply');
+                const totalData = await totalResponse.json();
+                
+                contractAddress = data.contractAddress;
+                
+                document.getElementById('systemStatus').innerHTML = `
+                    <div class="status-item">
+                        <span><strong>📍 Contract Address:</strong></span>
+                        <span class="small-text">${data.contractAddress}</span>
+                    </div>
+                    <div class="status-item">
+                        <span><strong>👥 Available Accounts:</strong></span>
+                        <span>${data.accountsCount}</span>
+                    </div>
+                    <div class="status-item">
+                        <span><strong>📜 Total Certificates:</strong></span>
+                        <span>${totalData.totalSupply}</span>
+                    </div>
+                    <div class="status-item">
+                        <span><strong>⛽ Owner Balance:</strong></span>
+                        <span>${data.ownerBalance}</span>
+                    </div>
+                    <div class="status-item">
+                        <span><strong>🔗 Block Number:</strong></span>
+                        <span>${data.blockNumber}</span>
+                    </div>
+                    <div class="status-item">
+                        <span><strong>⚡ Status:</strong></span>
+                        <span style="color: #28a745;">✅ Connected</span>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('systemStatus').innerHTML = `
+                    <div class="status-item">
+                        <span><strong>❌ Status:</strong></span>
+                        <span style="color: #dc3545;">Connection Error</span>
+                    </div>
+                    <div class="status-item">
+                        <span><strong>Error:</strong></span>
+                        <span>${error.message}</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Issue certificate
+        document.getElementById('certificateForm').onsubmit = async function(e) {
+            e.preventDefault();
+            
+            const issueBtn = document.getElementById('issueBtn');
+            const issueText = document.getElementById('issueText');
+            const issueLoading = document.getElementById('issueLoading');
+            const resultDiv = document.getElementById('issueResult');
+            
+            // Show loading
+            issueBtn.disabled = true;
+            issueText.style.display = 'none';
+            issueLoading.style.display = 'inline-block';
+            
+            try {
+                const formData = {
+                    studentAddress: document.getElementById('studentAddress').value,
+                    studentName: document.getElementById('studentName').value,
+                    courseName: document.getElementById('courseName').value,
+                    issueDate: document.getElementById('issueDate').value,
+                    grade: document.getElementById('grade').value
+                };
+                
+                const response = await fetch('/api/issue-certificate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>🎉 Certificate Issued Successfully!</h3>
+                            <div class="status-item">
+                                <span><strong>🎫 Token ID:</strong></span>
+                                <span>${result.tokenId}</span>
+                            </div>
+                            <div class="status-item">
+                                <span><strong>📋 Transaction Hash:</strong></span>
+                                <span class="small-text">${result.transactionHash}</span>
+                            </div>
+                            <div class="status-item">
+                                <span><strong>👤 Student:</strong></span>
+                                <span>${formData.studentName}</span>
+                            </div>
+                            <div class="status-item">
+                                <span><strong>📚 Course:</strong></span>
+                                <span>${formData.courseName}</span>
+                            </div>
+                            <div class="status-item">
+                                <span><strong>⛽ Gas Used:</strong></span>
+                                <span>${result.gasUsed}</span>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('certificateForm').reset();
+                    document.getElementById('issueDate').value = new Date().toISOString().split('T')[0];
+                    loadSystemStatus(); // Refresh status
+                } else {
+                    throw new Error(result.error);
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error Issuing Certificate</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                // Hide loading
+                issueBtn.disabled = false;
+                issueText.style.display = 'inline';
+                issueLoading.style.display = 'none';
+            }
+        };
+
+        // Verify certificate
+        async function verifyCertificate() {
+            const tokenId = document.getElementById('verifyTokenId').value;
+            const resultDiv = document.getElementById('verifyResult');
+            
+            if (!tokenId) {
+                resultDiv.innerHTML = '<div class="error">Please enter a token ID</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/verify/${tokenId}`);
+                const result = await response.json();
+                
+                if (result.isValid) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>✅ Certificate is Valid!</h3>
+                            <div class="certificate-display">
+                                <h4>🎓 Certificate Details</h4>
+                                <p><strong>👤 Student:</strong> ${result.studentName}</p>
+                                <p><strong>📚 Course:</strong> ${result.courseName}</p>
+                                <p><strong>🏆 Grade:</strong> ${result.grade}</p>
+                                <p><strong>📅 Issue Date:</strong> ${result.issueDate}</p>
+                                <p><strong>🔗 Owner:</strong> <span class="small-text">${result.owner}</span></p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Certificate Invalid</h3>
+                            <p>${result.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Verification Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // View certificate
+        async function viewCertificate() {
+            const tokenId = document.getElementById('viewTokenId').value;
+            const resultDiv = document.getElementById('viewResult');
+            
+            if (!tokenId) {
+                resultDiv.innerHTML = '<div class="error">Please enter a token ID</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/certificate/${tokenId}`);
+                const result = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="certificate-display">
+                        <h3>🎓 Certificate #${result.tokenId}</h3>
+                        <div class="grid">
+                            <div>
+                                <p><strong>👤 Student Name:</strong> ${result.studentName}</p>
+                                <p><strong>📚 Course Name:</strong> ${result.courseName}</p>
+                                <p><strong>🏆 Grade:</strong> ${result.grade}</p>
+                                <p><strong>📅 Issue Date:</strong> ${result.issueDate}</p>
+                            </div>
+                            <div>
+                                <p><strong>🔗 Owner:</strong> <br><span class="small-text">${result.owner}</span></p>
+                                <p><strong>📍 Student Address:</strong> <br><span class="small-text">${result.studentAddress}</span></p>
+                                <p><strong>✅ Valid:</strong> <span style="color: ${result.isValid ? 'green' : 'red'}">${result.isValid ? 'Yes' : 'No'}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error Loading Certificate</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Get student certificates
+        async function getStudentCertificates() {
+            const address = document.getElementById('studentWalletAddress').value;
+            const resultDiv = document.getElementById('studentResult');
+            
+            if (!address) {
+                resultDiv.innerHTML = '<div class="error">Please enter a wallet address</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/student/${address}`);
+                const result = await response.json();
+                
+                if (result.certificates.length === 0) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>📭 No Certificates Found</h3>
+                            <p>This address has no certificates issued.</p>
+                        </div>
+                    `;
+                } else {
+                    const certificatesHtml = result.certificates.map(cert => `
+                        <div class="certificate-display" style="margin-bottom: 15px;">
+                            <h4>🎓 Certificate #${cert.tokenId}</h4>
+                            <div class="grid">
+                                <div>
+                                    <p><strong>👤 Student:</strong> ${cert.studentName}</p>
+                                    <p><strong>📚 Course:</strong> ${cert.courseName}</p>
+                                </div>
+                                <div>
+                                    <p><strong>🏆 Grade:</strong> ${cert.grade}</p>
+                                    <p><strong>📅 Date:</strong> ${cert.issueDate}</p>
+                                    <p><strong>✅ Valid:</strong> <span style="color: ${cert.isValid ? 'green' : 'red'}">${cert.isValid ? 'Yes' : 'No'}</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>📜 Found ${result.totalCertificates} Certificate(s)</h3>
+                            <p><strong>🔗 Address:</strong> <span class="small-text">${result.studentAddress}</span></p>
+                            ${certificatesHtml}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error Loading Certificates</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize page
+        window.onload = function() {
+            loadSystemStatus();
+            
+            // Auto-connect if MetaMask is available and previously connected
+            if (typeof window.ethereum !== 'undefined') {
+                window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
+                    if (accounts.length > 0) {
+                        connectWallet();
+                    }
+                });
+            }
+        };
+
+        // Refresh status every 30 seconds
+        setInterval(loadSystemStatus, 30000);
+    </script>
+</body>
+</html>
